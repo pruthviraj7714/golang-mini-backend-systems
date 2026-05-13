@@ -7,8 +7,9 @@ import (
 )
 
 type Config struct {
-	Port  string
-	DBURL string
+	Port      string
+	DBURL     string
+	JWTSecret string
 }
 
 func getEnv(key, fallback string) string {
@@ -24,7 +25,8 @@ func LoadConfig() Config {
 	_ = godotenv.Load()
 
 	return Config{
-		Port:  getEnv("PORT", "8080"),
-		DBURL: getEnv("DATABASE_URL", ""),
+		Port:      getEnv("PORT", "8080"),
+		DBURL:     getEnv("DATABASE_URL", ""),
+		JWTSecret: getEnv("JWT_SECRET", ""),
 	}
 }
