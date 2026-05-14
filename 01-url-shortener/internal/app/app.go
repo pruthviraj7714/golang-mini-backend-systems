@@ -5,6 +5,7 @@ import (
 	"url-shortener/internal/config"
 	"url-shortener/internal/db"
 	"url-shortener/internal/handler"
+	"url-shortener/internal/models"
 	"url-shortener/internal/repository"
 	"url-shortener/internal/services"
 
@@ -27,6 +28,8 @@ func Start() {
 	userHandler := &handler.UserHandler{
 		UserServices: userServices,
 	}
+
+	database.AutoMigrate(&models.User{})
 
 	authRouter := r.Group("/auth")
 

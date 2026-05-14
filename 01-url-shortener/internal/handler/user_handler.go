@@ -18,7 +18,7 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 		Password string `json:"password"`
 	}
 
-	if err := c.BindJSON(c.Request.Body); err != nil {
+	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid request body",
 		})
@@ -53,7 +53,7 @@ func (h *UserHandler) LoginUser(c *gin.Context) {
 		Password string `json:"password"`
 	}
 
-	if err := c.BindJSON(c.Request.Body); err != nil {
+	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid request body",
 		})

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"url-shortener/internal/auth"
 	"url-shortener/internal/models"
 
@@ -37,6 +38,8 @@ func (r *UserRepository) RegisterUser(email, password string) error {
 		Email:    email,
 		Password: string(hashedPassword),
 	})
+
+	fmt.Println(res)
 
 	if res.Error != nil {
 		return errors.New("error creating user")
