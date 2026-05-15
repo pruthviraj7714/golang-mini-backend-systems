@@ -5,6 +5,7 @@ import (
 	"url-shortener/internal/config"
 	"url-shortener/internal/db"
 	"url-shortener/internal/handler"
+	"url-shortener/internal/middlewares"
 	"url-shortener/internal/models"
 	"url-shortener/internal/repository"
 	"url-shortener/internal/services"
@@ -35,6 +36,11 @@ func Start() {
 
 	authRouter.POST("/register", userHandler.RegisterUser)
 	authRouter.POST("/login", userHandler.LoginUser)
+
+	urlRouter := r.Group("/url")
+	urlRouter.Use(middlewares.AuthMiddleware())
+
+	urlRouter.POST("/shorten")
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

@@ -24,7 +24,7 @@ func (r *UserRepository) RegisterUser(email, password string) error {
 
 	res := r.DB.Where("email = ?", email).First(&existing)
 
-	if res.RowsAffected > 0 {
+	if res.Error == nil {
 		return errors.New("user already exists")
 	}
 
@@ -53,7 +53,7 @@ func (r *UserRepository) LoginUser(email, password string) (string, error) {
 
 	res := r.DB.Where("email = ?", email).First(&user)
 
-	if res.RowsAffected == 0 {
+	if res.Error == nil {
 		return "", errors.New("user not found")
 	}
 

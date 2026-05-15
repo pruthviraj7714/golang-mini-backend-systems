@@ -38,16 +38,16 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+		parsedToken, err := jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
 
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
 
-			return loadJWTSecret(), nil
+			return []byte(loadJWTSecret()), nil
 		})
 
-		if err != nil {
+		if err != nil || !parsedToken.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": "Authorization header is invalid",
 			})
@@ -56,9 +56,17 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		}
 
-		userClaims := claims.Claims.(jwt.MapClaims)
+		claims, ok := parsedToken.Claims.(jwt.MapClaims)
 
-		c.Set("user_id", userClaims["id"])
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "Authorization header is invalid",
+			})
+			c.Abort()
+			return
+		}
+
+		c.Set("userId", claims["id"])
 
 		c.Next()
 	}
