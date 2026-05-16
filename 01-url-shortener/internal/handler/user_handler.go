@@ -8,7 +8,7 @@ import (
 )
 
 type UserHandler struct {
-	UserServices *services.UserServices
+	UserService *services.UserService
 }
 
 func (h *UserHandler) RegisterUser(c *gin.Context) {
@@ -32,7 +32,7 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	err := h.UserServices.RegisterUser(request.Email, request.Password)
+	err := h.UserService.RegisterUser(request.Email, request.Password)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -67,7 +67,7 @@ func (h *UserHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	token, err := h.UserServices.LoginUser(request.Email, request.Password)
+	token, err := h.UserService.LoginUser(request.Email, request.Password)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

@@ -2,14 +2,14 @@ package services
 
 import "url-shortener/internal/repository"
 
-type UserServices struct {
+type UserService struct {
 	UserRepository *repository.UserRepository
 }
 
-func (s *UserServices) RegisterUser(email, password string) error {
+func (s *UserService) RegisterUser(email, password string) error {
 	return s.UserRepository.RegisterUser(email, password)
 }
 
-func (s *UserServices) LoginUser(email, password string) (string, error) {
+func (s *UserService) LoginUser(email, password string) (string, error) {
 	return s.UserRepository.LoginUser(email, password)
 }

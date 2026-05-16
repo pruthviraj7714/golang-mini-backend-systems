@@ -28,6 +28,10 @@ func (r *UserRepository) RegisterUser(email, password string) error {
 		return errors.New("user already exists")
 	}
 
+	if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return errors.New("database error")
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 	if err != nil {
@@ -53,7 +57,7 @@ func (r *UserRepository) LoginUser(email, password string) (string, error) {
 
 	res := r.DB.Where("email = ?", email).First(&user)
 
-	if res.Error == nil {
+	if res.Error != nil {
 		return "", errors.New("user not found")
 	}
 

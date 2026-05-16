@@ -56,7 +56,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		}
 
-		claims, ok := parsedToken.Claims.(jwt.MapClaims)
+		claims, ok := parsedToken.Claims.(*jwt.MapClaims)
 
 		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -66,7 +66,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userId", claims["id"])
+		c.Set("userId", (*claims)["userId"])
 
 		c.Next()
 	}

@@ -16,21 +16,36 @@ import (
 func Start() {
 	r := gin.Default()
 
+	cfg := config.LoadConfig()
+
 	database := db.Connect()
 
 	userRepository := &repository.UserRepository{
 		DB: database,
 	}
 
-	userServices := &services.UserServices{
+	userService := &services.UserService{
 		UserRepository: userRepository,
 	}
 
 	userHandler := &handler.UserHandler{
-		UserServices: userServices,
+		UserService: userService,
+	}
+
+	urlRepository := &repository.UrlRepository{
+		DB: database,
+	}
+
+	urlService := &services.UrlService{
+		UrlRepository: urlRepository,
+	}
+
+	urlHandler := &handler.UrlHandler{
+		UrlService: urlService,
 	}
 
 	database.AutoMigrate(&models.User{})
+	database.AutoMigrate(&models.Url{})
 
 	authRouter := r.Group("/auth")
 
@@ -40,7 +55,8 @@ func Start() {
 	urlRouter := r.Group("/url")
 	urlRouter.Use(middlewares.AuthMiddleware())
 
-	urlRouter.POST("/shorten")
+	urlRouter.POST("/shorten", urlHandler.CreateUrl)
+	r.GET("/:shortId", urlHandler.RedirectToShortUrl)
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -48,5 +64,5 @@ func Start() {
 		})
 	})
 
-	r.Run(":" + config.LoadConfig().Port)
+	r.Run(":" + cfg.Port)
 }
