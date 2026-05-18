@@ -18,9 +18,39 @@ func Start() {
 
 	database.AutoMigrate(&jobs.Job{})
 
+	// queue := queue.NewJobQueue(100)
+
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "OK",
+		})
+	})
+
+	r.POST("/jobs", func(c *gin.Context) {
+		var req struct {
+			Type    string `json:"type"`
+			Payload any    `json:"payload"`
+		}
+
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		resp := database.Model(&jobs.Job{}).Create(&req)
+
+		if resp.Error != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Internal Server Error",
+				"error":   resp.Error.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Job successfully Pushed into queue",
 		})
 	})
 
