@@ -6,6 +6,7 @@ import (
 	"worker-pool/internal/config"
 	"worker-pool/internal/db"
 	"worker-pool/internal/jobs"
+	"worker-pool/internal/queue"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +19,7 @@ func Start() {
 
 	database.AutoMigrate(&jobs.Job{})
 
-	// queue := queue.NewJobQueue(100)
+	queue := queue.NewJobQueue(100)
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -27,19 +28,25 @@ func Start() {
 	})
 
 	r.POST("/jobs", func(c *gin.Context) {
-		var req struct {
+		var CreateJobRequest struct {
 			Type    string `json:"type"`
 			Payload any    `json:"payload"`
 		}
 
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusOK, gin.H{
+		if err := c.ShouldBindJSON(&CreateJobRequest); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		resp := database.Model(&jobs.Job{}).Create(&req)
+		job := jobs.Job{
+			Type:    CreateJobRequest.Type,
+			Status:  "PENDING",
+			Payload: CreateJobRequest.Payload,
+		}
+
+		resp := database.Model(&jobs.Job{}).Create(&job)
 
 		if resp.Error != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -48,6 +55,8 @@ func Start() {
 			})
 			return
 		}
+
+		queue.Enqueue(&job)
 
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Job successfully Pushed into queue",
