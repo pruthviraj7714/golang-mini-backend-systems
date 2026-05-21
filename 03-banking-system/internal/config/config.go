@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
-	Port      string
-	JWTSECRET string
-	DBURL     string
+	Port               string
+	AccessTokenSecret  string
+	RefreshTokenSecret string
+	DBURL              string
 }
 
 func LoadConfig() *Config {
@@ -21,9 +22,10 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
-		Port:      os.Getenv("PORT"),
-		JWTSECRET: os.Getenv("JWT_SECRET"),
-		DBURL:     os.Getenv("DB_URL"),
+		Port:               os.Getenv("PORT"),
+		AccessTokenSecret:  os.Getenv("ACCESS_TOKEN_SECRET"),
+		RefreshTokenSecret: os.Getenv("REFRESH_TOKEN_SECRET"),
+		DBURL:              os.Getenv("DB_URL"),
 	}
 
 }

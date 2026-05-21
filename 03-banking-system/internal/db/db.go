@@ -15,7 +15,7 @@ func Connect(connStr string) *gorm.DB {
 		log.Fatal("Failed to connect to database")
 	}
 
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.User{}, &models.Account{})
 
 	return db
 
