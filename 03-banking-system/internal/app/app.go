@@ -27,14 +27,8 @@ func Start() {
 		DB: database,
 	}
 
-	jwtService := services.NewJWTService(
-		cfg.AccessTokenSecret,
-		cfg.RefreshTokenSecret,
-	)
-
 	userService := &services.UserService{
-		Repo:       userRepo,
-		JWTService: jwtService,
+		Repo: userRepo,
 	}
 
 	userHandler := &handlers.UserHandler{

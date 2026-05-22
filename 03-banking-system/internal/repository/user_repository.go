@@ -2,6 +2,7 @@ package repository
 
 import (
 	"banking-system/internal/models"
+	"banking-system/internal/utils"
 	"errors"
 	"fmt"
 
@@ -52,8 +53,14 @@ func (r *UserRepository) Login(email, password string) (string, string, error) {
 		return "", "", errors.New("Incorrect password")
 	}
 
-	accessToken, _ := GenerateAccessToken(user.ID)
-	refreshToken, _ := GenerateRefreshToken(user.ID)
+	accessToken, err := utils.GenerateAccessToken(user.ID)
+	if err != nil {
+		return "", "", err
+	}
+	refreshToken, err := utils.GenerateRefreshToken(user.ID)
+	if err != nil {
+		return "", "", err
+	}
 
 	return accessToken, refreshToken, nil
 
