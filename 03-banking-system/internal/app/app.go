@@ -4,6 +4,7 @@ import (
 	"banking-system/internal/config"
 	"banking-system/internal/db"
 	"banking-system/internal/handlers"
+	"banking-system/internal/middleware"
 	"banking-system/internal/repository"
 	"banking-system/internal/services"
 	"net/http"
@@ -38,6 +39,25 @@ func Start() {
 	authRouter := router.Group("/auth")
 	authRouter.POST("/register", userHandler.Register)
 	authRouter.POST("/login", userHandler.Login)
+
+	accountRouter := router.Group("/account")
+
+	accountRepo := &repository.AccountRepository{
+		DB: database,
+	}
+
+	accountService := &services.AccountService{
+		Repo: accountRepo,
+	}
+
+	accountHandler := &handlers.AccountHandler{
+		AccountService: accountService,
+	}
+
+	accountRouter.Use(middleware.AuthMiddleware())
+	accountRouter.POST("/", accountHandler.CreateAccount)
+	accountRouter.GET("/", accountHandler.GetAccount)
+
 	router.Run(":" + cfg.Port)
 
 }

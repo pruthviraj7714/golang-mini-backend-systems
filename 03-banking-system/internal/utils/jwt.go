@@ -35,11 +35,10 @@ func GenerateRefreshToken(userId uuid.UUID) (string, error) {
 
 func VerifyToken(tokenString string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Ensure the signing method is HMAC (HS256)
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return os.Getenv("ACCESS_TOKEN_SECRET"), nil
+		return []byte(os.Getenv("ACCESS_TOKEN_SECRET")), nil
 	})
 	return token, err
 }
