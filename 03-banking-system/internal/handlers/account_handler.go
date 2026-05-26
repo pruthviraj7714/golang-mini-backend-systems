@@ -69,3 +69,19 @@ func (h *AccountHandler) GetAccount(c *gin.Context) {
 	})
 
 }
+
+func (h *AccountHandler) WithdrawMoney(c *gin.Context) {
+
+}
+
+func (h *AccountHandler) DepositMoney(c *gin.Context) {
+
+}
+
+func (h *AccountHandler) TransferMoney(c *gin.Context) {
+
+}
+
+func (h *AccountHandler) GetTransactions(c *gin.Context) {
+
+}
