@@ -72,9 +72,92 @@ func (h *AccountHandler) GetAccount(c *gin.Context) {
 
 func (h *AccountHandler) WithdrawMoney(c *gin.Context) {
 
+	userId, exists := c.MustGet("userId").(string)
+
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "UserId not found",
+		})
+		return
+	}
+
+	var req struct {
+		amount int64
+	}
+
+	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	parsedUUID, err := uuid.Parse(userId)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	msg, err := h.AccountService.WithdrawMoney(parsedUUID, req.amount)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": msg,
+	})
+
 }
 
 func (h *AccountHandler) DepositMoney(c *gin.Context) {
+	userId, exists := c.MustGet("userId").(string)
+
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "UserId not found",
+		})
+		return
+	}
+
+	var req struct {
+		amount int64
+	}
+
+	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	parsedUUID, err := uuid.Parse(userId)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	msg, err := h.AccountService.DepositMoney(parsedUUID, req.amount)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": msg,
+	})
 
 }
 

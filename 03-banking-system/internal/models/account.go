@@ -24,7 +24,7 @@ type Account struct {
 	UserID uuid.UUID `json:"user_id" gorm:"not null"`
 
 	// Balance is the current balance in the account
-	Balance float64 `json:"balance" gorm:"not null;default:0"`
+	Balance int64 `json:"balance" gorm:"not null;default:0"`
 
 	// Status is the status of the account (e.g., "ACTIVE", "SUSPENDED", "CLOSED")
 	Status AccountStatus `json:"status" gorm:"not null;default:'ACTIVE'"`

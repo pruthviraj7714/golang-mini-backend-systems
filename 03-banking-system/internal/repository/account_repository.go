@@ -2,6 +2,7 @@ package repository
 
 import (
 	"banking-system/internal/models"
+	"errors"
 	"fmt"
 	"math/rand"
 
@@ -45,4 +46,44 @@ func (r *AccountRepository) GetAccount(userId uuid.UUID) (*models.Account, error
 	}
 
 	return &account, nil
+}
+
+func (r *AccountRepository) WithdrawMoney(userId uuid.UUID, amount int64) (string, error) {
+	var account models.Account
+
+	err := r.DB.Where("user_id = ?", userId).First(&account).Error
+
+	if err != nil {
+		return "", err
+	}
+
+	if account.Balance < amount {
+		return "", errors.New("Insufficient Balance")
+	}
+
+	err = r.DB.Model(&models.Account{}).Where("account_number = ?", account.AccountNumber).Update("balance", gorm.Expr("balance -?", amount)).Error
+
+	if err != nil {
+		return "", err
+	}
+
+	return "Amount successfully Withdrawn", nil
+}
+
+func (r *AccountRepository) DepositMoney(userId uuid.UUID, amount int64) (string, error) {
+	var account models.Account
+
+	err := r.DB.Where("user_id = ?", userId).First(&account).Error
+
+	if err != nil {
+		return "", err
+	}
+
+	err = r.DB.Model(&models.Account{}).Where("account_number = ?", account.AccountNumber).Update("balance", gorm.Expr("balance - ?", amount)).Error
+
+	if err != nil {
+		return "", err
+	}
+
+	return "Amount successfully Deposited", nil
 }

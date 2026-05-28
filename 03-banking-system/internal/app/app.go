@@ -57,6 +57,8 @@ func Start() {
 	accountRouter.Use(middleware.AuthMiddleware())
 	accountRouter.POST("/", accountHandler.CreateAccount)
 	accountRouter.GET("/", accountHandler.GetAccount)
+	accountRouter.POST("/withdraw", accountHandler.WithdrawMoney)
+	accountRouter.POST("/deposit", accountHandler.DepositMoney)
 
 	router.Run(":" + cfg.Port)
 
