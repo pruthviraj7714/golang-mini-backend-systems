@@ -26,3 +26,8 @@ func (s *AccountService) WithdrawMoney(userId uuid.UUID, amount int64) (string, 
 func (s *AccountService) DepositMoney(userId uuid.UUID, amount int64) (string, error) {
 	return s.Repo.DepositMoney(userId, amount)
 }
+
+func (s *AccountService) TransferMoney(userId uuid.UUID, amount int64, fromAccountNumber, toAccountNumber string) (string, error) {
+	return s.Repo.TransferMoney(userId, amount, fromAccountNumber, toAccountNumber)
+
+}

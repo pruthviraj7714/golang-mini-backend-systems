@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type AccountRepository struct {
@@ -96,4 +97,47 @@ func (r *AccountRepository) DepositMoney(userId uuid.UUID, amount int64) (string
 	}
 
 	return "Amount successfully Deposited", nil
+}
+
+func (r *AccountRepository) TransferMoney(userId uuid.UUID, amount int64, fromAccountNumber, toAccountNumber string) (string, error) {
+	err := r.DB.Transaction(func(tx *gorm.DB) error {
+		if amount <= 0 {
+			return errors.New("invalid amount")
+		}
+
+		var from models.Account
+
+		if err := tx.
+			Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("user_id = ? AND account_number = ?", userId, fromAccountNumber).
+			First(&from).Error; err != nil {
+			return err
+		}
+
+		if from.Balance < amount {
+			return errors.New("insufficient balance")
+		}
+
+		if err := tx.Model(&models.Account{}).
+			Where("account_number = ?", fromAccountNumber).
+			UpdateColumn("balance", gorm.Expr("balance - ?", amount)).
+			Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(&models.Account{}).
+			Where("account_number = ?", toAccountNumber).
+			UpdateColumn("balance", gorm.Expr("balance + ?", amount)).
+			Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return "Amount transferred successfully", nil
 }

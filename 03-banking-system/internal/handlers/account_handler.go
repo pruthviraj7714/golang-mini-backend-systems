@@ -162,6 +162,48 @@ func (h *AccountHandler) DepositMoney(c *gin.Context) {
 }
 
 func (h *AccountHandler) TransferMoney(c *gin.Context) {
+	userId, exists := c.MustGet("userId").(string)
+
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "UserId not found",
+		})
+		return
+	}
+	var reqBody struct {
+		FromAccountNumber string `json:"fromAccountNumber"`
+		ToAccountNumber   string `json:"ToAccountNumber"`
+		Amount            int64  `json:"amount"`
+	}
+
+	if err := c.ShouldBindBodyWithJSON(&reqBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	parsedUUID, err := uuid.Parse(userId)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	msg, err := h.AccountService.TransferMoney(parsedUUID, reqBody.Amount, reqBody.FromAccountNumber, reqBody.ToAccountNumber)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": msg,
+	})
 
 }
 
