@@ -50,28 +50,33 @@ func (r *AccountRepository) GetAccount(userId uuid.UUID) (*models.Account, error
 }
 
 func (r *AccountRepository) WithdrawMoney(userId uuid.UUID, amount int64) (string, error) {
-	var account models.Account
+	err := r.DB.Transaction(func(tx *gorm.DB) error {
 
-	err := r.DB.Where("user_id = ?", userId).First(&account).Error
+		var account models.Account
+
+		result := tx.Where("user_id = ?", userId).First(&account)
+
+		if result.Error != nil {
+			return result.Error
+		}
+
+		if account.Balance < amount {
+			return errors.New("Insufficient Balance")
+		}
+
+		result = tx.Model(&models.Account{}).Clauses(clause.Locking{
+			Strength: "UPDATE",
+		}).Where("id = ?", account.ID).UpdateColumn("balance", gorm.Expr("balance - ?", amount))
+
+		if result.Error != nil {
+			return result.Error
+		}
+
+		return nil
+	})
 
 	if err != nil {
 		return "", err
-	}
-
-	fmt.Print(account)
-
-	if account.Balance < amount {
-		return "", errors.New("Insufficient Balance")
-	}
-
-	result := r.DB.Model(&models.Account{}).Where("id = ?", account.ID).UpdateColumn("balance", gorm.Expr("balance - ?", amount))
-
-	if result.Error != nil {
-		return "", result.Error
-	}
-
-	if result.RowsAffected == 0 {
-		return "", errors.New("no rows updated")
 	}
 
 	return "Amount successfully Withdrawn", nil

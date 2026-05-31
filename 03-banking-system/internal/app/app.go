@@ -59,6 +59,7 @@ func Start() {
 	accountRouter.GET("/", accountHandler.GetAccount)
 	accountRouter.POST("/withdraw", accountHandler.WithdrawMoney)
 	accountRouter.POST("/deposit", accountHandler.DepositMoney)
+	accountRouter.POST("/transfer", accountHandler.TransferMoney)
 
 	router.Run(":" + cfg.Port)
 
