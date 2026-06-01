@@ -60,6 +60,7 @@ func Start() {
 	accountRouter.POST("/withdraw", accountHandler.WithdrawMoney)
 	accountRouter.POST("/deposit", accountHandler.DepositMoney)
 	accountRouter.POST("/transfer", accountHandler.TransferMoney)
+	accountRouter.GET("/transactions", accountHandler.GetTransactions)
 
 	router.Run(":" + cfg.Port)
 

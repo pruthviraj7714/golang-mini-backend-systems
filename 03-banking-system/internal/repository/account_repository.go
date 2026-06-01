@@ -146,3 +146,16 @@ func (r *AccountRepository) TransferMoney(userId uuid.UUID, amount int64, fromAc
 
 	return "Amount transferred successfully", nil
 }
+
+func (r *AccountRepository) GetTransactions(userId uuid.UUID) ([]models.Transaction, error) {
+
+	var transactions []models.Transaction
+
+	err := r.DB.Model(&models.Transaction{}).Where("user_id = ?", userId).Find(&transactions)
+
+	if err != nil {
+		return []models.Transaction{}, nil
+	}
+
+	return transactions, nil
+}

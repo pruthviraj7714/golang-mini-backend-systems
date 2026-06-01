@@ -31,3 +31,6 @@ func (s *AccountService) TransferMoney(userId uuid.UUID, amount int64, fromAccou
 	return s.Repo.TransferMoney(userId, amount, fromAccountNumber, toAccountNumber)
 
 }
+func (s *AccountService) GetTransactions(userId uuid.UUID) ([]models.Transaction, error) {
+	return s.Repo.GetTransactions(userId)
+}

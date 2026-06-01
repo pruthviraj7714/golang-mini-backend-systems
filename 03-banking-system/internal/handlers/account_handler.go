@@ -209,4 +209,36 @@ func (h *AccountHandler) TransferMoney(c *gin.Context) {
 
 func (h *AccountHandler) GetTransactions(c *gin.Context) {
 
+	userId, exists := c.MustGet("userId").(string)
+
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "userId not found",
+		})
+		return
+	}
+
+	parsedUserId, err := uuid.Parse(userId)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	data, err := h.AccountService.GetTransactions(parsedUserId)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Internal Server Error",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"transactions": data,
+	})
+
 }

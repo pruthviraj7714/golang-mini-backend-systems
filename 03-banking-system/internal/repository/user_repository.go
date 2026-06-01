@@ -4,7 +4,6 @@ import (
 	"banking-system/internal/models"
 	"banking-system/internal/utils"
 	"errors"
-	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -43,9 +42,6 @@ func (r *UserRepository) Login(email, password string) (string, string, error) {
 	if err != nil {
 		return "", "", errors.New("User not found")
 	}
-
-	fmt.Println(user.Password)
-	fmt.Println(password)
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 
