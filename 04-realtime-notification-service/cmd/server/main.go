@@ -1,7 +1,7 @@
 package main
 
-import "realtime-notification-service/internal/app"
+import "realtime-notification-service/internal/api"
 
 func main() {
-	app.Start()
+	api.Start()
 }
