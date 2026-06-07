@@ -8,7 +8,8 @@ import (
 )
 
 type Config struct {
-	Port string
+	Port  string
+	DBURL string
 }
 
 func getEnv(key string, defaultValue string) string {
@@ -26,6 +27,7 @@ func New() *Config {
 	}
 
 	return &Config{
-		Port: getEnv("PORT", "8080"),
+		Port:  getEnv("PORT", "8080"),
+		DBURL: getEnv("DATABASE_URL", ""),
 	}
 }
