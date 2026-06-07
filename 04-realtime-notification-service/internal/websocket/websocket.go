@@ -1,12 +1,15 @@
 package websocket
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"net/http"
+	"realtime-notification-service/internal/models"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"gorm.io/gorm"
 )
 
 var upgrader = websocket.Upgrader{
@@ -21,25 +24,37 @@ var upgrader = websocket.Upgrader{
 
 type WebsocketManager struct {
 	clients map[string]*websocket.Conn
+	db      *gorm.DB
+	mutex   sync.RWMutex
 }
 
-func NewWebsocketManager() *WebsocketManager {
+func NewWebsocketManager(db *gorm.DB) *WebsocketManager {
 	return &WebsocketManager{
 		clients: make(map[string]*websocket.Conn),
+		db:      db,
+		mutex:   sync.RWMutex{},
 	}
 }
 
 func (m *WebsocketManager) RegisterClient(conn *websocket.Conn, userId string) {
+	defer m.mutex.Unlock()
+	m.mutex.Lock()
+
 	m.clients[userId] = conn
 	log.Printf("Client connected: %v, User ID: %s", conn.RemoteAddr(), userId)
 }
 
 func (m *WebsocketManager) UnregisterClient(userId string) {
+	defer m.mutex.Unlock()
+	m.mutex.Lock()
+
 	delete(m.clients, userId)
 	log.Printf("Client disconnected: %s", userId)
 }
 
 func (m *WebsocketManager) BroadcastMessage(message []byte) {
+	defer m.mutex.Unlock()
+	m.mutex.Lock()
 	for _, conn := range m.clients {
 		err := conn.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
@@ -49,12 +64,26 @@ func (m *WebsocketManager) BroadcastMessage(message []byte) {
 	}
 }
 
-func (m *WebsocketManager) SendNotification(userId, message string) error {
-	for uId, conn := range m.clients {
-		if uId == userId {
-			err := conn.WriteMessage(websocket.TextMessage, []byte(message))
-			return err
-		}
+func (m *WebsocketManager) SendNotification(userId string, message string) error {
+	conn, exists := m.clients[userId]
+
+	if !exists {
+		return errors.New("user not connected")
+	}
+
+	err := m.db.Create(&models.Notification{
+		UserID:  userId,
+		Message: message,
+	}).Error
+
+	if err != nil {
+		return err
+	}
+
+	err = conn.WriteMessage(websocket.TextMessage, []byte(message))
+
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -69,8 +98,6 @@ func StartWebsocketServer(c *gin.Context, manager *WebsocketManager, userId stri
 	}
 
 	manager.RegisterClient(ws, userId)
-
-	fmt.Println("active clients:", len(manager.clients))
 
 	defer manager.UnregisterClient(userId)
 
@@ -102,15 +129,35 @@ func StartWebsocketServer(c *gin.Context, manager *WebsocketManager, userId stri
 
 }
 
-func GetConnections(c *gin.Context, manager *WebsocketManager) {
+func GetConnections(manager *WebsocketManager) ([]string, error) {
+	defer manager.mutex.RUnlock()
+
+	manager.mutex.RLock()
+
 	var connections []string
 
-	for userId, _ := range manager.clients {
+	for userId := range manager.clients {
 		connections = append(connections, userId)
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"connectedClients": connections,
-	})
+	return connections, nil
 
+}
+
+func GetNotificationsHistory(manager *WebsocketManager, userId string) ([]models.Notification, error) {
+
+	var notifications []models.Notification
+
+	err := manager.db.
+		Where("user_id = ?", userId).
+		Order("created_at DESC").
+		Limit(20).
+		Find(&notifications).
+		Error
+
+	if err != nil {
+		return []models.Notification{}, err
+	}
+
+	return notifications, nil
 }
