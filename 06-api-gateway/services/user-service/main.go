@@ -1,7 +1,6 @@
 package main
 
 import (
-	"api-gateway/middleware"
 	"fmt"
 	"net/http"
 
@@ -10,8 +9,6 @@ import (
 
 func main() {
 	r := gin.Default()
-
-	r.Use(middleware.LoggingMiddleware())
 
 	r.GET("/users", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

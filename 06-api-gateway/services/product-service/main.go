@@ -1,7 +1,6 @@
 package main
 
 import (
-	"api-gateway/middleware"
 	"fmt"
 	"net/http"
 
@@ -11,14 +10,12 @@ import (
 func main() {
 	r := gin.Default()
 
-	r.Use(middleware.LoggingMiddleware())
-
-	r.GET("/product", func(c *gin.Context) {
+	r.GET("/products", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"service": "product-service",
 		})
 	})
 
-	fmt.Println("Product Service is running on Port 8081")
+	fmt.Println("Product Service is running on Port 8082")
 	r.Run(":8082")
 }
